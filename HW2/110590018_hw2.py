@@ -1,83 +1,62 @@
-import cv2
 import numpy as np
-from copy import deepcopy
+import cv2
+import random
 
-class Answer:
-    def __init__(self):
-        self.imgs=[]
-        self.binaryImgs=[]
-        self.Dye={0:[0,0,0],
-                  1:[255,0,0],
-                  2:[0,255,0],
-                  3:[0,0,255],
-                  4:[255,255,0],
-                  5:[0,255,255],
-                  6:[255,0,255]}
-        for i in range(1,4):
-            self.imgs.append(cv2.imread(f'images/img{i}.png'))
-    def RgbToBinary(self):
-        imgQ1 = deepcopy(self.imgs)
-        THRESHOLD = 128.0
-        for i in range(3):
-            imgQ1[i] = imgQ1[i].astype(np.float32)
-            imgQ1[i] = 0.11 * imgQ1[i][:,:,0] + 0.59 * imgQ1[i][:,:,1] + 0.3 * imgQ1[i][:,:,2]
-            imgQ1[i] = np.clip(imgQ1[i], 0, 255).astype(np.uint8)
-            for x in range(imgQ1[i].shape[0]):
-                for y in range(imgQ1[i].shape[1]):
-                    if imgQ1[i][x][y] > THRESHOLD:
-                        imgQ1[i][x][y] = 255
-                    else:
-                        imgQ1[i][x][y] = 0
-        self.binaryImgs=imgQ1
+def generate_random_color():
+    return [random.randint(0, 255) for _ in range(3)]
 
+def label_connected4_components(img):
+    labeled_img = np.zeros_like(img, dtype=np.int32)
+    label = 1
+    rows, cols = img.shape[:2]
+    for x in range(rows):
+        for y in range(cols):
+            if img[x, y] != 0 and labeled_img[x, y] == 0:
+                stack = [(x, y)]
+                while stack:
+                    cx, cy = stack.pop()
+                    if 0 <= cx < rows and 0 <= cy < cols and img[cx, cy] != 0 and labeled_img[cx, cy] == 0:
+                        labeled_img[cx, cy] = label
+                        stack.extend([(cx+1, cy), (cx-1, cy), (cx, cy+1), (cx, cy-1)])
+                label += 1
 
+    # 染色
+    colored_labeled_img = np.zeros((rows, cols, 3), dtype=np.uint8)
+    for lbl in range(1, label):
+        color = generate_random_color()
+        colored_labeled_img[labeled_img == lbl] = color
 
-    def ConnectFour(self):
+    return colored_labeled_img
+def label_connected8_components(img):
+    labeled_img = np.zeros_like(img, dtype=np.int32)
+    label = 1
+    rows, cols = img.shape[:2]
+    for x in range(rows):
+        for y in range(cols):
+            if img[x, y] != 0 and labeled_img[x, y] == 0:
+                stack = [(x, y)]
+                while stack:
+                    cx, cy = stack.pop()
+                    if 0 <= cx < rows and 0 <= cy < cols and img[cx, cy] != 0 and labeled_img[cx, cy] == 0:
+                        labeled_img[cx, cy] = label
+                        stack.extend([(cx+1, cy), (cx-1, cy), (cx, cy+1), (cx, cy-1),(cx-1, cy-1), (cx+1, cy-1), (cx+1, cy+1), (cx-1, cy+1)])
+                label += 1
 
-        def DetectFour(img, x, y):
-            minNum = [255]
-            if img[x, min(img.shape[1]-1, y+1)] > 0:
-                minNum.append(img[x, min(img.shape[1]-1, y+1)])
-            if img[x, max(y-1, 0)] > 0:
-                minNum.append(img[x, max(y-1, 0)])
-            if img[max(0,x-1), y] > 0:
-                minNum.append(img[max(0,x-1), y])
-            if img[min(x+1, img.shape[0]-1), y] > 0:
-                minNum.append(img[min(x+1, img.shape[0]-1), y])
-            return np.array(minNum).min()
-        
+    # 染色
+    colored_labeled_img = np.zeros((rows, cols, 3), dtype=np.uint8)
+    for lbl in range(1, label):
+        color = generate_random_color()
+        colored_labeled_img[labeled_img == lbl] = color
 
-        self.RgbToBinary()
-        conv = deepcopy(self.binaryImgs)
-        count = 1
-        # conv = np.array([[[0,255,0,0,0],[255,255,255,0,255],[255,0,0,255,255]]])
-        # print(conv.shape[1])
-        for _ in range(2):  
-            for i in range(len(conv)):
-                flag = False
-                
-                for x in range(self.imgs[i].shape[0]):
-                    for y in range(self.imgs[i].shape[1]):
-                        if(conv[i][x][y] != 0):
-                            flag = True
-                            conv[i][x][y] = count
-                            minNum = DetectFour(conv[i], x, y)
-                            if(minNum != 255):
-                                conv[i][x][y] = minNum
-                        else:
-                            if(flag):
-                                count+=1
-                            flag = False
-        for i in range(len(conv)):
-            for x in range(conv[i].shape[0]):
-                for y in range(conv[i].shape[1]):
-                    conv[i,x,y]=np.array(self.Dye[conv[i,x,y]])
-        print(conv)
+    return colored_labeled_img
 
-        
-    def ConnectEight(self):
-        pass
-if __name__== '__main__':
-    Ans = Answer()
-    Ans.ConnectFour()
-
+if __name__ == "__main__":
+    for i in range(1,5):
+        img_path = f'images/img{i}.png'
+        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+        _, binary_img = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY)
+        colored_labeled_img = label_connected4_components(binary_img)
+        cv2.imwrite(f'img{i}_4.png',colored_labeled_img)
+        colored_labeled_img = label_connected8_components(binary_img)
+        cv2.imwrite(f'img{i}_8.png',colored_labeled_img)
+    
