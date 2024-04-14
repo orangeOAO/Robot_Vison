@@ -27,6 +27,7 @@ def label_connected4_components(img):
         colored_labeled_img[labeled_img == lbl] = color
 
     return colored_labeled_img
+
 def label_connected8_components(img):
     labeled_img = np.zeros_like(img, dtype=np.int32)
     label = 1
@@ -41,7 +42,6 @@ def label_connected8_components(img):
                         labeled_img[cx, cy] = label
                         stack.extend([(cx+1, cy), (cx-1, cy), (cx, cy+1), (cx, cy-1),(cx-1, cy-1), (cx+1, cy-1), (cx+1, cy+1), (cx-1, cy+1)])
                 label += 1
-
     # 染色
     colored_labeled_img = np.zeros((rows, cols, 3), dtype=np.uint8)
     for lbl in range(1, label):

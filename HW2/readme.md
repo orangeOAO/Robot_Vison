@@ -22,5 +22,5 @@
 
 ## Issue
 
-1. 我本來用recurcive來寫尋訪，結果超過python的最大深度:D
+1. 我本來用recursive來寫尋訪，結果超過python的最大深度:D
 2. 改成用for寫後，遇到Two-Pass Algorithm成效不佳的問題，因為圖片會有超多色塊，需要寫到20幾次才能讓色塊變得不那麼雜，但這樣相比於這個程式跑超級久。
