@@ -9,7 +9,7 @@ def zhang_suen_thinning(img):
             for j in range(1, im.shape[1] - 1):
                 p2, p3, p4 = im[i-1, j], im[i-1, j+1], im[i, j+1]
                 p5, p6, p7 = im[i+1, j+1], im[i+1, j], im[i+1, j-1]
-                p8, p9, p1 = im[i, j-1], im[i-1, j-1], im[i-1, j]
+                p8, p9, p1 = im[i, j-1], im[i-1, j-1], im[i, j]
                 A  = (p2 == 0 and p3 == 1) + (p3 == 0 and p4 == 1) + \
                      (p4 == 0 and p5 == 1) + (p5 == 0 and p6 == 1) + \
                      (p6 == 0 and p7 == 1) + (p7 == 0 and p8 == 1) + \
