@@ -23,7 +23,7 @@ class ImageProcessor:
         for y in range(filter_size):
             for x in range(filter_size):
                 mask[y,x] = G((y-filter_size//2),(x-filter_size//2))
-        
+        mask /= np.sum(mask)
         pad_size = filter_size // 2
         padding_image = np.pad(image, pad_size, mode='constant', constant_values=0)
         self.__filtered_image = np.zeros_like(image,dtype=np.uint8)
@@ -118,7 +118,7 @@ class ImageProcessor:
         self.GaussianFilter(image)
         self.Gradient()
         self.Suppress_nonMaximum()
-        self.Double_threshold(140,50)
+        self.Double_threshold(160,50)
         self.Edge_tracking_by_hysteresis()
         self.Write_image(num)
 
